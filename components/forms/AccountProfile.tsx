@@ -1,7 +1,7 @@
 "use client"
 
 import { UserValidation } from '@/lib/validations/user';
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import { z } from "zod"
@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from 'next/image';
+import { isBase64Image } from '@/lib/utils';
+import { uploadFiles, useUploadThing } from '@/lib/uploadthing';
+
 
 interface Props {
   user: {
@@ -34,6 +37,9 @@ interface Props {
 
 const AccountProfile = ({ user, btnTitle }: Props) => {
 
+  const [files, setFiles] = useState<File[]>([]);
+  const { startUpload } = useUploadThing("media")
+
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
@@ -44,14 +50,67 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
     }
   })
 
-  const handleImage = (e: ChangeEvent, fieldChange: (value: string) => void) => {
+  const handleImage = (
+    e: ChangeEvent<HTMLInputElement>,
+    fieldChange: (value: string) => void
+  ) => {
     e.preventDefault();
+
+    const fileReader = new FileReader();
+
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFiles(Array.from(e.target.files));
+
+      if (!file.type.includes("image")) return;
+
+      fileReader.onload = async (event) => {
+        const imageDataUrl = event.target?.result?.toString() || "";
+        console.log(imageDataUrl);
+        fieldChange(imageDataUrl);
+      }
+
+      fileReader.readAsDataURL(file);
+    }
 
   }
 
-  function onSubmit(values: z.infer<typeof UserValidation>) {
+  const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+    const blob = values.profile_photo;
 
-    console.log(values)
+    const hasImageChanged = isBase64Image(blob);
+    if (hasImageChanged) {
+      // const imgRes = await startUpload(files);
+      // if (imgRes && imgRes.length > 0 && imgRes[0].fileUrl) {
+      //   values.profile_photo = imgRes[0].fileUrl;
+      // }
+
+      const data = new FormData();
+      data.append("file", blob);
+      data.append("upload_preset", "Chat App");
+      data.append("cloud_name", "dfilvvqwg");
+      fetch("https://api.cloudinary.com/v1_1/dfilvvqwg/image/upload", {
+        method: "post",
+        body: data,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          values.profile_photo = data.url.toString();
+          console.log(values.profile_photo);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+    }
+    
+    
+
+    
+    //TODO : update user profile
+
+
+
   }
 
   return (
