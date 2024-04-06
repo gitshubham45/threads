@@ -1,4 +1,5 @@
 "use strict";
+"use server"
 
 import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
@@ -23,10 +24,13 @@ export async function updateUser(
         image,
         path,
     }: Params): Promise<void> {
+
+
     connectToDB();
 
+
     try {
-        await User.findOneAndUpdate(
+        const user  = await User.findOneAndUpdate(
             { id: userId },
             {
                 username: username.toLowerCase(),
@@ -38,10 +42,27 @@ export async function updateUser(
             { upsert: true }
         );
 
+        console.log(user);
+
         if (path === "/profile/edit") {
             revalidatePath(path);
         }
     } catch (error: any) {
         throw new Error(`Failed to create/update user : ${error.message}`);
     };
+}
+
+export async function fetchUser(userId: string){
+    try{
+        connectToDB();
+
+        return await User
+            .findOne({id:userId})
+            // .populate({
+            //     path : 'communities',
+            //     model : Community
+            // })
+    }catch (error: any) {
+        throw new Error(`Failed to fetch user : ${error.message}`);
+    }
 }

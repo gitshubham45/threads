@@ -1,9 +1,15 @@
+"use server"
+
 import mongoose from "mongoose";
+// import dotenv from "dotenv";
+
 
 let isConnected = false; // variable to check connection status
 
 export const connectToDB = async () => {
+
     mongoose.set('strictQuery', true);
+
 
     if (!process.env.MONGODB_URL) return console.log("Mongo db connection not successful");
 

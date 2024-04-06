@@ -115,13 +115,16 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
         username: values.username,
         name: values.name,
         bio: values.bio,
-        image: values.profile_photo, 
+        image: values.profile_photo,
         path: pathname
       }
-    )
-    //TODO : update user profile
+    );
 
-
+    if (pathname === "/profile/edit") {
+      router.back();
+    } else {
+      router.push('/');
+    }
 
   }
 
@@ -165,6 +168,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   onChange={(e) => handleImage(e, field.onChange)}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
