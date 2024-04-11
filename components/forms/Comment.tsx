@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image";
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import * as z from "zod";
 
@@ -38,12 +38,13 @@ const Comment = ({ threadId, currentUserImg, currentUserId }: Props) => {
         resolver: zodResolver(CommentValidation),
         defaultValues: {
             thread: '',
-
+            accountId: currentUserId
         }
     })
 
+
     const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
-        await addCommentToThread(threadId, values.thread , JSON.parse(currentUserId),pathname);
+        await addCommentToThread(threadId, values.thread, JSON.parse(currentUserId), pathname);
 
         form.reset();
     }

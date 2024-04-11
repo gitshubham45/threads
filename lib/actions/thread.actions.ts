@@ -130,14 +130,18 @@ export async function addCommentToThread(
             parentId : threadId,
         });
 
+        // save the new thread
         const saveCommentThread = await commentThread.save();
 
+        // Update the original thread to include the new comment 
         originalThread.children.push(saveCommentThread._id);
 
         await originalThread.save();
 
+        revalidatePath(path);
+
     }catch(error:any){
-        
+        throw new Error(`Error adding comment  to thread ${error.message}`);
     }
 
 }
